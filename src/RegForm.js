@@ -8,8 +8,17 @@ import Confirm from "./Components/RegFormComponents/Confirm";
 import Success from "./Components/RegFormComponents/Success";
 import {getStepValidationSchema} from "./Components/RegFormComponents/validationSchema";
 import Button from "@material-ui/core/Button";
+import { postRegistration } from "./dbFunctions";
+import { regFormJson } from "./Components/RegFormComponents/formatJson";
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { Backdrop } from "@material-ui/core";
 
-const renderStep = (step, {values, errors, touched, handleChange, setFieldValue}) => {
+const renderStep = (
+  step, 
+  {values, errors, touched, handleChange, setFieldValue},
+  patientId,
+  errorPresent,
+  ) => {
   switch (step) {
     case 0:
       return (
@@ -51,11 +60,11 @@ const renderStep = (step, {values, errors, touched, handleChange, setFieldValue}
     case 4:
       return (
         <Confirm
-          values={values}
+          values={values} errorPresent={errorPresent}
         />
       );
     case 5:
-      return <Success />;
+      return <Success patientId={patientId}/>;
     default:
       return 0;
   }
@@ -113,9 +122,11 @@ export const RegForm = () => {
 
   const [step, setStep] = useState(0);
   const isSubmitStep = step === 4;
-
   // a snapshot of form state is used as initialValues after each transition
-  const [snapshot, setSnapshot] = useState({...regFormData});  
+  const [snapshot, setSnapshot] = useState({...regFormData});
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorPresent, setErrorPresent] = useState(false);
+  let patientId = Object.create(null);  
   
   const nextStep = values => {
     setSnapshot(values);
@@ -129,9 +140,39 @@ export const RegForm = () => {
 
   const handleSubmit = (values, formikBag) => {
     if (isSubmitStep) {
-      // code to send form data to backend here
-      //return onSubmit(values, formikBag);
-      return nextStep(values);
+      const newUser = regFormJson(values);
+      setIsLoading(true);
+      //reset error state for re-submissions
+      setErrorPresent(false);
+     
+      // ---- for testing ----
+      // create test user below
+      // newUser = getTestData(1).registration
+      // setTimeout(() => {
+      //   setIsLoading(false);
+      //   // success case
+      //   // params.patientID = 1;
+      //   // return nextStep(values);
+      //   // error case
+      //   setErrorPresent(false); 
+      // }, 3000)
+      // ---- end of testing code ----
+
+      postRegistration(newUser).then(res => {
+        setIsLoading(false);
+        // check if response is a number (ie patientId)
+        if (isNaN(res)) {
+          setErrorPresent(true);
+        } else {
+          setErrorPresent(false);
+          // registration successful
+          patientId = res;
+          nextStep(values); 
+        }
+      }).catch(err => {
+        setErrorPresent(true);
+      });
+
     } else if (step === 5) {
       // reset form
       setSnapshot(snapshot => ({...regFormData}));
@@ -152,25 +193,36 @@ export const RegForm = () => {
       >
         {formik => (
           <Form noValidate>
-            {renderStep(step, formik)}
-            {(step > 0 && step < 5) && <Button
+            {renderStep(step, formik, patientId, errorPresent)}
+            {(step > 0 && step < 5 && !isLoading) && <Button
               variant="contained"
               color="primary"
               style={{ marginTop: 20, marginRight: 20 }}
               onClick={() => prevStep(formik.values)}
+              disabled={isLoading}
             >
               Back
             </Button>}
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ marginTop: 20 }}
-              type="submit"
-              // disabled={step === 4 && formik.isSubmitting}
-            >
-              {isSubmitStep ? 'Submit' : step < 5 ? 'Next' : 'Register new patient'}
-            </Button>
-            {/* <pre>{JSON.stringify(formik, null, 2)}</pre> */}
+
+            {!isLoading 
+          ? <Button
+            variant="contained"
+            color="primary"
+            style={{ marginTop: 20 }}
+            type="submit"
+            disabled={isSubmitStep && isLoading}
+          >
+            {isSubmitStep  
+              ? "Submit" 
+              : step < 5
+              ? "Next"
+              : "Register new patient"}
+          </Button>
+          : <Backdrop open={isLoading}>
+              <CircularProgress />
+          </Backdrop>
+          }
+
           </Form>
         )}
       </Formik>
