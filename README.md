@@ -1,7 +1,7 @@
 # Project i2Eye 2020 Registration Form 
 This repository contains my work on registration form (frontend only) as part of Project i2Eye 2020 and it demonstrates my first attempt in building a **ReactJS form with Formik and Yup** as the form validation mechanisms.
 
-*Project i2Eye is an overseas community involvement project (OCIP) based in Madhya Pradesh, India and led by students from the National University of Singapore (NUS) Yong Loo Lin School of Medicine. The project stems from the aim of improving health of locals via health screening interventions and education. (For more details on the project, please refer to https://projecti2eye.com/) Thus, the registration form holds the purpose of recording important information of the beneficiaries of the OCIP.*
+*As of 2020, Project i2Eye is an overseas community involvement project (OCIP) based in Madhya Pradesh, India and led by students from the National University of Singapore (NUS) Yong Loo Lin School of Medicine. The project stems from the aim of improving health of locals via health screening interventions and education. (For more details on the project, please refer to https://projecti2eye.com/) Thus, the registration form holds the purpose of recording important information of the beneficiaries of the OCIP.*
 
 <p>
 The application developed is a combined effort of a team of aspiring students, and therefore I do not take full credit. <b><i>This repository contains mostly work done by me.</i></b> 
